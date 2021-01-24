@@ -70,15 +70,17 @@ def getConfMatrixResults(matrix):
     epsilon       = np.finfo(np.float32).eps
     accuracies    = count_correct / (count_gts + epsilon)
     IoUs          = count_correct / (count_gts + count_preds - count_correct + epsilon)
+    #IoUs是真实标签与预测标签的重叠部分，这个计算得到的是类数目那么多个值
     totAccuracy   = count_correct.sum() / (matrix.sum() + epsilon)
     
     num_valid     = (count_gts > 0).sum()
     meanAccuracy  = accuracies.sum() / (num_valid + epsilon)
-    meanIoU       = IoUs.sum() / (num_valid + epsilon)
+    meanIoU       = IoUs.sum() / (num_valid + epsilon)#根据有效类数目，计算平均IoU
     
     result = {'totAccuracy': round(totAccuracy,4), 'meanAccuracy': round(meanAccuracy,4), 'meanIoU': round(meanIoU,4)}
-    if num_valid == 2:
-        result['IoUs_bg'] = round(IoUs[0],4)
+    #result是一个字典
+    if num_valid == 2:#有效属性为2是代表
+        result['IoUs_bg'] = round(IoUs[0],4)#这两个是准备做什么呢？
         result['IoUs_fg'] = round(IoUs[1],4)
         
     return result
@@ -96,15 +98,19 @@ class AverageConfMeter(object):
     def update(self, val):
         self.val = val
         if self.count == 0:
-            self.sum = val.copy().astype(np.float64)
+            self.sum = val.copy().astype(np.float64)# 浅拷贝：深拷贝父对象（一级目录），子对象（二级目录）不拷贝
         else:
             self.sum += val.astype(np.float64)
         
         self.count += 1
         self.avg = getConfMatrixResults(self.sum)
+        #传入的sum是什么格式来着呢，因为前面的getConfMatrixResults是对混淆矩阵
 
 class AverageMeter(object):
-    """Computes and stores the average and current value"""
+    """
+    Computes and stores the average and current value
+    这是因为batch-zize的原因，所以有计算的值是分开的吗？
+    """
     def __init__(self):
         self.reset()
 
@@ -121,7 +127,10 @@ class AverageMeter(object):
         self.avg = round(self.sum / self.count,4)
 
 class LAverageMeter(object):
-    """Computes and stores the average and current value"""
+    """
+    Computes and stores the average and current value
+    lsit格式的
+    """
     def __init__(self):
         self.reset()
 
@@ -144,7 +153,7 @@ class LAverageMeter(object):
                 self.sum[i] += v
                 self.avg[i] = round(self.sum[i] / self.count,4)
 
-class DAverageMeter(object):
+class DAverageMeter(object):#字典格式的
     def __init__(self):
         self.reset()
     
